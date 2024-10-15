@@ -30,6 +30,30 @@
         }
       ],
       "id": "5b4b"
+    },
+    {
+      "id": "7569",
+      "name": "onam celebrations",
+      "destinations": "we are celebrating onam in bengaluru offcie",
+      "fields": [
+        {
+          "title": "question",
+          "name": "will you join with us?",
+          "required": true,
+          "type": "radio",
+          "options": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "title": "will bring some flowers?",
+          "name": "will bring some flowers?",
+          "required": true,
+          "type": "text",
+          "options": []
+        }
+      ]
     }
   ]
 }

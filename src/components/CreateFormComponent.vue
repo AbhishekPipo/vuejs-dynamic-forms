@@ -37,35 +37,51 @@
           <textarea v-model="formDestinations" class="w-full p-2 border rounded-md" rows="3" placeholder="Form Destinations"></textarea>
         </div>
 
-        <div>
-          <label class="block mb-2">Field Title</label>
-          <input type="text" v-model="fieldTitle" class="w-full p-2 border rounded-md" placeholder="Field Title">
+        <!-- Fields section -->
+        <div v-for="(field, index) in fields" :key="index" class="bg-white p-4 rounded-md mb-4">
+          <h4 class="text-lg font-semibold mb-2">Field {{ index + 1 }}</h4>
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <label class="block mb-2">Field Title</label>
+              <input type="text" v-model="field.title" class="w-full p-2 border rounded-md" placeholder="Field Title">
+            </div>
+
+            <div>
+              <label class="block mb-2">Field Name</label>
+              <input type="text" v-model="field.name" class="w-full p-2 border rounded-md" placeholder="Field Name">
+            </div>
+
+            <div>
+              <label class="block mb-2">Required</label>
+              <input type="checkbox" v-model="field.required">
+            </div>
+
+            <div>
+              <label class="block mb-2">Input Type</label>
+              <select v-model="field.type" class="w-full p-2 border rounded-md">
+                <option value="text">Text</option>
+                <option value="radio">Radio</option>
+                <!-- Add other options as needed -->
+              </select>
+            </div>
+
+            <div v-if="field.type === 'radio'">
+              <label class="block mb-2">Options</label>
+              <div v-for="(option, optionIndex) in field.options" :key="optionIndex" class="flex mb-2">
+                <input type="text" v-model="field.options[optionIndex]" class="flex-grow p-2 border rounded-md mr-2">
+                <button @click="removeOption(index, optionIndex)" class="bg-red-500 text-white p-2 rounded-md">Remove</button>
+              </div>
+              <div class="flex">
+                <input type="text" v-model="field.newOption" class="flex-grow p-2 border rounded-md mr-2" placeholder="New Option">
+                <button @click="addOption(index)" class="bg-blue-500 text-white p-2 rounded-md">Add Option</button>
+              </div>
+            </div>
+
+            <button @click="removeField(index)" class="bg-red-500 text-white p-2 rounded-md">Remove Field</button>
+          </div>
         </div>
 
-        <div>
-          <label class="block mb-2">Field Name</label>
-          <input type="text" v-model="fieldName" class="w-full p-2 border rounded-md" placeholder="Field Name">
-        </div>
-
-        <div>
-          <label class="block mb-2">Required</label>
-          <input type="checkbox" v-model="isRequired">
-        </div>
-
-        <div>
-          <label class="block mb-2">Input Type</label>
-          <select v-model="inputType" class="w-full p-2 border rounded-md">
-            <option value="text">Text</option>
-            <option value="radio">Radio</option>
-            <!-- Add other options as needed -->
-          </select>
-        </div>
-
-        <div v-if="inputType === 'radio'">
-          <label class="block mb-2">Option Name</label>
-          <input type="text" v-model="optionName" class="w-full p-2 border rounded-md mb-2" placeholder="Option Name">
-          <button @click="addOption" class="bg-blue-500 text-white p-2 rounded-md">Add Option</button>
-        </div>
+        <button @click="addField" class="bg-green-500 text-white p-2 rounded-md">Add New Field</button>
 
         <button @click="saveForm" class="bg-blue-500 text-white p-2 rounded-md mt-4">Save Form</button>
       </div>
@@ -82,14 +98,9 @@ export default {
       forms: [],
       formName: '',
       formDestinations: '',
-      fieldTitle: '',
-      fieldName: '',
-      isRequired: false,
-      inputType: 'text',
-      optionName: '',
-      options: [],
-      showFormCreation: false, // Track visibility of the form creation section
-      editingFormId: null, // Track the form being edited
+      fields: [],
+      showFormCreation: false,
+      editingFormId: null,
     };
   },
   mounted() {
@@ -109,15 +120,13 @@ export default {
         const newForm = {
           name: this.formName,
           destinations: this.formDestinations,
-          fields: [
-            {
-              title: this.fieldTitle,
-              name: this.fieldName,
-              required: this.isRequired,
-              type: this.inputType,
-              options: this.inputType === 'radio' ? this.options : [],
-            },
-          ],
+          fields: this.fields.map(field => ({
+            title: field.title,
+            name: field.name,
+            required: field.required,
+            type: field.type,
+            options: field.type === 'radio' ? field.options : [],
+          })),
         };
 
         if (this.editingFormId) {
@@ -128,7 +137,7 @@ export default {
 
         this.resetForm();
         this.fetchForms();
-        this.toggleFormCreation(); // Close the form creation section after saving
+        this.toggleFormCreation();
       } catch (error) {
         console.error('Error saving form:', error);
       }
@@ -144,33 +153,47 @@ export default {
     editForm(form) {
       this.formName = form.name;
       this.formDestinations = form.destinations;
-      // Populate field data for editing
-      this.fieldTitle = form.fields[0]?.title || '';
-      this.fieldName = form.fields[0]?.name || '';
-      this.isRequired = form.fields[0]?.required || false;
-      this.inputType = form.fields[0]?.type || 'text';
-      this.options = form.fields[0]?.options || [];
-      this.editingFormId = form.id; // Track the form being edited
-      this.showFormCreation = true; // Show the form creation section when editing
+      this.fields = form.fields.map(field => ({
+        ...field,
+        newOption: '',
+      }));
+      this.editingFormId = form.id;
+      this.showFormCreation = true;
     },
-    addOption() {
-      if (this.optionName) {
-        this.options.push(this.optionName);
-        this.optionName = '';
+    addField() {
+      this.fields.push({
+        title: '',
+        name: '',
+        required: false,
+        type: 'text',
+        options: [],
+        newOption: '',
+      });
+    },
+    removeField(index) {
+      this.fields.splice(index, 1);
+    },
+    addOption(fieldIndex) {
+      const field = this.fields[fieldIndex];
+      if (field.newOption) {
+        field.options.push(field.newOption);
+        field.newOption = '';
       }
+    },
+    removeOption(fieldIndex, optionIndex) {
+      this.fields[fieldIndex].options.splice(optionIndex, 1);
     },
     resetForm() {
       this.formName = '';
       this.formDestinations = '';
-      this.fieldTitle = '';
-      this.fieldName = '';
-      this.isRequired = false;
-      this.inputType = 'text';
-      this.options = [];
-      this.editingFormId = null; // Reset editing form ID
+      this.fields = [];
+      this.editingFormId = null;
     },
     toggleFormCreation() {
-      this.showFormCreation = !this.showFormCreation; // Toggle visibility of the form creation section
+      this.showFormCreation = !this.showFormCreation;
+      if (!this.showFormCreation) {
+        this.resetForm();
+      }
     },
   },
 };
