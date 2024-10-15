@@ -1,0 +1,35 @@
+{
+  "forms": [
+    {
+      "name": "school form",
+      "destinations": "teachers should fill",
+      "fields": [
+        {
+          "title": "name",
+          "name": "first name",
+          "required": true,
+          "type": "text",
+          "options": []
+        }
+      ],
+      "id": "5d12"
+    },
+    {
+      "name": "TRIP FORM",
+      "destinations": "WE ARE PLANNING A TRIP IN THIS MONTH",
+      "fields": [
+        {
+          "title": "ARE YOU COMING TO TRIP",
+          "name": "TRIP CONFIRMATION",
+          "required": true,
+          "type": "radio",
+          "options": [
+            "YES",
+            "NO"
+          ]
+        }
+      ],
+      "id": "5b4b"
+    }
+  ]
+}
